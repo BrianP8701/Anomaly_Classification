@@ -1,15 +1,12 @@
 '''
-This file contains functions for preprocessing images.
+    This file contains functions for preprocessing images.
 
-    - Add padding to square images to make them larger.
-    - Resize square images.
-    - Simplify images by emphasizing edges and reducing noise through color simplification based on pixel color variation.
-        Before inputting image, make sure to make it black and white. For example, you can do:
-        image = cv2.imread(image_path)[:,:,0]
-
+    1. Add padding to square images to make them larger.
+    2. Resize square images.
+    3. Simplify images by emphasizing edges and reducing noise through color simplification based on pixel color variation.
 '''
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageFilter
 import numpy as np
 import cv2
 
@@ -36,14 +33,18 @@ def pad_image(input_path, output_path, final_size):
         img_with_border.save(output_path)
 
 # The method simplifies the image by emphasizing edges and reducing noise through color simplification based on pixel color variation.
-def simplify(img: np.ndarray):
+def simplify(img: str):
+    img = cv2.imread(input_path)[:,:,0]
     # Get standard deviation across all pixels in image
     x = np.std(img)
+    print(x)
     
     # Compute the 'range' threshold based on the standard deviation
-    rang = 2.04023 * x - 4.78237
-    if(x < 20): rang = 5
-    print(rang)
+    threshold = 2.04023 * x - 4.78237
+    print(threshold)
+    if(x < 20): threshold = 5
+    print(threshold)
+    threshold = 5
     
     # Find the maximum pixel intensity in the image
     whitestPixel = 0
@@ -54,16 +55,16 @@ def simplify(img: np.ndarray):
     # Set all pixels with intensities greater than 'whitestPixel - range' to 255 (white)
     for i in range(len(img)):
         for j in range(len(img[0])):
-            if(img[i][j] > whitestPixel - rang): img[i][j] = 255
+            if(img[i][j] > whitestPixel - threshold): img[i][j] = 255
             
-    # Set cutoff to '255 - range'
-    cutoff = 255 - rang
+    # Cutoff is the minimum pixel intensity we have already simplified
+    cutoff = 255 - threshold
     
     # Loop until all pixels have been categorized
     while(True):    
         whitestPixel = 0
         
-        # Find the maximum pixel intensity that's less than 'cutoff' and greater than the most intense pixel in this range
+        # Find the maximum pixel intensity that's less than 'cutoff'
         for i in range(len(img)):
             for j in range(len(img[0])):
                 if(img[i][j] < cutoff and img[i][j] > whitestPixel): whitestPixel = img[i][j]
@@ -74,21 +75,35 @@ def simplify(img: np.ndarray):
         # Set all pixels with intensities greater than 'whitestPixel - range' and less than 'cutoff' to 'whitestPixel'
         for i in range(len(img)):
             for j in range(len(img[0])):
-                if(img[i][j] > whitestPixel - rang and img[i][j] < cutoff): img[i][j] = whitestPixel
+                if(img[i][j] > whitestPixel - threshold and img[i][j] < cutoff): img[i][j] = whitestPixel
                 
-        # Reduce 'cutoff' by 'range'
-        cutoff = whitestPixel - rang
+        # Update cutoff
+        cutoff = whitestPixel - threshold
     return img
+
+def preprocess_image(img_path):
+    # Load image
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)  # Load in grayscale
+
+    # Denoise
+    img = cv2.fastNlMeansDenoising(img, h=10, templateWindowSize=7, searchWindowSize=21)
+
+    # Convert to PIL Image for edge enhancement
+    #img = Image.fromarray(img)
+
+    # Sharpen edges using Unsharp Mask
+    #img = img.filter(ImageFilter.UnsharpMask(radius=1, percent=1000))
+
+    return np.array(img)
 
 
 frame = 0
 while True:
-    print(frame)
-    input_path = f'raw_datasets/classification_datasets/over/frame{frame}.jpg'
-    output_path = f'raw_datasets/resize_datasets/over/frame{frame}.jpg'
+    input_path = f'whiten_testing/frame{frame}.jpg'
+    output_path = f'whiten_output/frame{frame}.jpg'
     
-    image = cv2.imread(input_path)[:,:,0]
-    image = resize_image(input_path, output_path, 224)
+    img = preprocess_image(input_path)
+    cv2.imwrite(output_path, img)
     
     frame += 1
 

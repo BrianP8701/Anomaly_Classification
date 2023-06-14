@@ -1,15 +1,15 @@
 '''
-This file provides a specific preprocessing tool to crop images.
-A user may select the size of a crop box with the crop_box_size variable. 
+    This file provides a specific preprocessing tool to crop images.
+    A user may select the size of a crop box with the crop_box_size variable. 
 
-1. Call the main method with your image path and destination path to use the tool.
+        1. Call the main method with your image path and destination path to use the tool.
 
-2. Left click to select the bottom right corner of what you want to crop.
+        2. Left click to select the bottom right corner of what you want to crop.
 
-Note: There's this annoying thing where for a moment after clicking, the crop box will 
-continue to follow your mouse. So just keep your mouse still for like, half a second after clicking.
+    Note: There's this annoying thing where for a moment after clicking, the crop box will 
+    continue to follow your mouse. So just keep your mouse still for like, half a second after clicking.
 
-3. Click c twice to select and exit.
+        3. Click c twice to select and exit.
 '''
 
 import cv2
