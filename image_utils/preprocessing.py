@@ -84,13 +84,11 @@ def simplify(img: np.ndarray):
 frame = 0
 while True:
     print(frame)
-    input_path = f'datasets/resize_datasets/normal/frame{frame}.jpg'
-    output_path = f'whiten1_224/frame{frame}.jpg'
+    input_path = f'raw_datasets/classification_datasets/over/frame{frame}.jpg'
+    output_path = f'raw_datasets/resize_datasets/over/frame{frame}.jpg'
     
     image = cv2.imread(input_path)[:,:,0]
-    image = simplify(image)
-    cv2.imwrite(output_path, image)
-    print()
+    image = resize_image(input_path, output_path, 224)
     
     frame += 1
 
