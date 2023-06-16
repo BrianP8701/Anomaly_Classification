@@ -1,9 +1,7 @@
 '''
     This file contains functions for preprocessing images.
 
-    1. Add padding to square images to make them larger.
-    2. Resize square images.
-    3. Simplify images by emphasizing edges and reducing noise through color simplification based on pixel color variation.
+    For zoomed in images around the extruder, the gmms_preprocess_image function is found to work best.
 '''
 
 from PIL import Image, ImageOps, ImageFilter
@@ -15,6 +13,17 @@ from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import time
 
+'''
+Gaussian Mixture Model Preprocessing with Extra Sensitivty for Material
+
+    Params:
+        img_path: path to image
+        num_components: number of clusters to fit
+    
+    Returns:
+        data: A simplified image split into num_components+1 homogneous 
+        regions, with a focus on the recently extruded material
+'''
 def gmms_preprocess_image(img_path, num_components):
     data = cv2.imread(img_path)[:,:,0]
     original_shape = data.shape
@@ -59,6 +68,16 @@ def gmms_preprocess_image(img_path, num_components):
     data = unflatten(data, original_shape)
     return data
     
+'''
+Gaussian Mixture Model Preprocessing
+
+    Params:
+        img_path: path to image
+        num_components: number of clusters to fit
+    
+    Returns:
+        data: A simplified image split into num_components homogneous regions
+'''
 def gmm_preprocess_image(img_path, num_components):
     data = cv2.imread(img_path)[:,:,0]
     original_shape = data.shape
@@ -86,7 +105,36 @@ def gmm_preprocess_image(img_path, num_components):
     
     data = unflatten(data, original_shape)
     return data
+
+'''
+Gaussian Mixture Model
+
+    Params: 
+        img_path: path to image
+        num_components: number of clusters to fit
+        
+    Returns:
+        means: list of means for each cluster
+        variances: list of variances for each cluster
+'''
+def gmm_parameters(data, num_components):
+    # Reshape data to fit the GMM input requirements (should be 2D)
+    data = data.reshape(-1, 1)
+
+    # Initialize Gaussian Mixture Model
+    gmm = GaussianMixture(n_components=num_components, random_state=0)
+
+    # Fit the GMM to the data
+    gmm.fit(data)
+
+    # Extract means and variances
+    means = gmm.means_.flatten()  # Flatten to convert to 1D
+    variances = gmm.covariances_.flatten()
+
+    # Return the parameters as a list
+    return list(means), list(variances)
     
+# Splits the range 0-255 into intervals based on the provided means and standard deviations.
 def get_ranges(means, std_devs):
     # Calculate the raw ranges
     raw_ranges = list(zip(means - std_devs, means + std_devs))
@@ -123,35 +171,6 @@ def replace_values_within_range(array, range, replacement_value):
     lower, upper = range
     array[(array >= lower) & (array <= upper)] = replacement_value
     return array
-
-'''
-Gaussian Mixture Model
-
-    Params: 
-        img_path: path to image
-        num_components: number of clusters to fit
-        
-    Returns:
-        means: list of means for each cluster
-        variances: list of variances for each cluster
-'''
-def gmm_parameters(data, num_components):
-    # Reshape data to fit the GMM input requirements (should be 2D)
-    data = data.reshape(-1, 1)
-
-    # Initialize Gaussian Mixture Model
-    gmm = GaussianMixture(n_components=num_components, random_state=0)
-
-    # Fit the GMM to the data
-    gmm.fit(data)
-
-    # Extract means and variances
-    means = gmm.means_.flatten()  # Flatten to convert to 1D
-    variances = gmm.covariances_.flatten()
-
-    # Return the parameters as a list
-    return list(means), list(variances)
-
 
 # Given an image path and number of clusters, returns cluster assignments and cluster centers
 def perform_kmeans(data, k):
@@ -267,7 +286,6 @@ def pad_image(input_path, output_path, final_size):
         img_with_border = ImageOps.expand(img, (left_padding, top_padding, right_padding, bottom_padding), fill='black')
         img_with_border.save(output_path)
 
-
 # The method simplifies the image by emphasizing edges and reducing noise through color simplification based on pixel color variation.
 def simplify(input_path: str):
     img = cv2.imread(input_path)[:,:,0]
@@ -332,20 +350,3 @@ def preprocess_image(img_path):
     img = img.filter(ImageFilter.UnsharpMask(radius=8, percent=100))
 
     return np.array(img)
-
-frame = 0
-while True:
-    print(f'Frame: {frame}')
-    print()
-    print()
-    img = gmms_preprocess_image(f'whiten/whiten_test/frame{frame}.jpg', 4)
-    cv2.imwrite(f'whiten/gmms4/frame{frame}.jpg', img)
-    img = gmms_preprocess_image(f'whiten/whiten_test/frame{frame}.jpg', 6)
-    cv2.imwrite(f'whiten/gmms6/frame{frame}.jpg', img)
-    img = gmms_preprocess_image(f'whiten/whiten_test/frame{frame}.jpg', 8)
-    cv2.imwrite(f'whiten/gmms8/frame{frame}.jpg', img)
-    frame += 1
-
-
-
-
