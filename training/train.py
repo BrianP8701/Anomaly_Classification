@@ -65,18 +65,18 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1) 
 
     since = time.time()
-
+    
     # Create a temporary directory to save training checkpoints
     with TemporaryDirectory() as tempdir:
         best_model_params_path = os.path.join(tempdir, destination_path)
 
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
-        y_true = []
-        y_pred = []
-        precision_list = []
-        recall_list = []
-        f1_list = []
+        # y_true = []
+        # y_pred = []
+        # precision_list = []
+        # recall_list = []
+        # f1_list = []
 
         for epoch in range(num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -107,9 +107,9 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
                         _, preds = torch.max(outputs, 1)
                         loss = criterion(outputs, labels)
                         
-                        # Append the true labels and predictions to your lists
-                        y_true.extend(labels.cpu().numpy())
-                        y_pred.extend(preds.cpu().numpy())
+                        # # Append the true labels and predictions to your lists
+                        # y_true.extend(labels.cpu().numpy())
+                        # y_pred.extend(preds.cpu().numpy())
 
                         # backward + optimize only if in training phase
                         if phase == 'train':
@@ -122,14 +122,14 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
                 if phase == 'train':
                     scheduler.step()
                     
-                # Calculate metrics
-                precision = precision_score(y_true, y_pred, average='weighted')
-                recall = recall_score(y_true, y_pred, average='weighted')
-                f1 = f1_score(y_true, y_pred, average='weighted')
+                # # Calculate metrics
+                # precision = precision_score(y_true, y_pred, average='weighted')
+                # recall = recall_score(y_true, y_pred, average='weighted')
+                # f1 = f1_score(y_true, y_pred, average='weighted')
                 
-                precision_list.append(precision)
-                recall_list.append(recall)
-                f1_list.append(f1)
+                # precision_list.append(precision)
+                # recall_list.append(recall)
+                # f1_list.append(f1)
                 
                 epoch_loss = running_loss / dataset_sizes[phase]
                 epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -146,14 +146,14 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
         time_elapsed = time.time() - since
         print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
         print(f'Best val Acc: {best_acc:4f}')
-        print(f'Precision: {precision_list}')
-        print(f'Recall: {recall_list}')
-        print(f'F1: {f1_list}')
+        # print(f'Precision: {precision_list}')
+        # print(f'Recall: {recall_list}')
+        # print(f'F1: {f1_list}')
 
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path))
         
-    return model
+    return model, best_acc
 
 # Finetune weights of pretrained model on new dataset
 def finetune(model, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
@@ -172,8 +172,8 @@ def finetune(model, data_dir, destination_path, num_of_classes, batch_size=4, nu
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_of_classes)
 
-    model = train_model(model, data_dir, destination_path, batch_size, num_epochs)
-    return model
+    model, accuracy = train_model(model, data_dir, destination_path, batch_size, num_epochs)
+    return model, accuracy
 
 # Freeze weights of pretrained model and train only the final fully connected layer
 def transfer_learning(model, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
@@ -196,5 +196,5 @@ def transfer_learning(model, data_dir, destination_path, num_of_classes, batch_s
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_of_classes)
         
-    model = train_model(model, data_dir, destination_path, batch_size, num_epochs)
-    return model
+    model, accuracy = train_model(model, data_dir, destination_path, batch_size, num_epochs)
+    return model, accuracy
