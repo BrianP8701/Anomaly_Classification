@@ -1,34 +1,95 @@
+'''
+Provides methods to organize data to work with the training methods in the repository.
+'''
+
 import os
 import shutil
 from sklearn.model_selection import train_test_split
+import random
 
-def train_val_split(source_dir, target_dir, val_size):
-    # Create train and val directories
-    os.makedirs(os.path.join(target_dir, 'train'), exist_ok=True)
-    os.makedirs(os.path.join(target_dir, 'val'), exist_ok=True)
+"""
+    Splits each class in the given data directory into training and validation subsets.
 
-    # For each class in the dataset
-    for class_dir in os.listdir(source_dir):
-        if os.path.isdir(os.path.join(source_dir, class_dir)):
-            # Get all the images in this class
-            images = os.listdir(os.path.join(source_dir, class_dir))
-            
-            # Split images into train and validation sets
-            train_images, val_images = train_test_split(images, test_size=val_size, random_state=42)
+    Args:
+        data_dir (str): The directory containing the data. This directory should have a subdirectory for each class,
+                        and each subdirectory should contain the images for that class.
+                        For example:
 
-            # Create target directories for this class
-            os.makedirs(os.path.join(target_dir, 'train', class_dir), exist_ok=True)
-            os.makedirs(os.path.join(target_dir, 'val', class_dir), exist_ok=True)
+                        data_dir/
+                            class1/
+                                image1.jpg
+                                image2.jpg
+                                ...
+                            class2/
+                                image1.jpg
+                                image2.jpg
+                                ...
+                            ...
+        val_size (float): The proportion of images from each class to put into the validation set. This should be a 
+                          decimal between 0 and 1. For example, 0.2 means 20% of images from each class will be used 
+                          for validation.
 
-            # Move images to their respective sets
-            frame = 0
-            for img in train_images:
-                shutil.move(os.path.join(source_dir, class_dir, img), os.path.join(target_dir, 'train', class_dir, f'frame{frame}.jpg'))
-                frame += 1
-            frame = 0
-            for img in val_images:
-                shutil.move(os.path.join(source_dir, class_dir, img), os.path.join(target_dir, 'val', class_dir, f'frame{frame}.jpg'))
-                frame += 1
+    The function will rearrange the images in the data directory such that it has a separate subdirectory for training
+    and validation sets. Each of these subdirectories will then have a subdirectory for each class. For example:
+
+        data_dir/
+            train/
+                class1/
+                class2/
+                ...
+            val/
+                class1/
+                class2/
+                ...
+"""
+def split_into_train_val(data_dir, val_size):
+    # Ensure val_size is a valid proportion
+    assert 0 <= val_size <= 1, "val_size should be a decimal between 0 and 1"
+
+    # Loop through each class in the data_dir
+    for class_name in os.listdir(data_dir):
+        class_dir = os.path.join(data_dir, class_name)
+
+        # Skip if it's not a directory (for example, .DS_Store files on MacOS)
+        if not os.path.isdir(class_dir):
+            continue
+
+        # Collect all image files in the class_dir
+        image_files = [f for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+
+        # Shuffle image_files for randomness
+        random.shuffle(image_files)
+
+        # Calculate the number of validation files
+        num_val_files = int(len(image_files) * val_size)
+
+        # Get the validation files
+        val_files = image_files[:num_val_files]
+
+        # Create validation directory if it doesn't exist
+        val_dir = os.path.join(data_dir, 'val', class_name)
+        if not os.path.exists(val_dir):
+            os.makedirs(val_dir)
+
+        # Move the validation files to the validation directory
+        for val_file in val_files:
+            shutil.move(os.path.join(class_dir, val_file), val_dir)
+
+        # Create training directory if it doesn't exist
+        train_dir = os.path.join(data_dir, 'train', class_name)
+        if not os.path.exists(train_dir):
+            os.makedirs(train_dir)
+
+        # Move the remaining files to the training directory
+        for train_file in os.listdir(class_dir):
+            shutil.move(os.path.join(class_dir, train_file), train_dir)
+
+        # Delete the original class directory
+        os.rmdir(class_dir)
+        
+        # Call rename_files on both the train and val directories for this class
+        rename_files(train_dir)
+        rename_files(val_dir)
                 
 '''            
 If you have a folder of images formatted like this:
@@ -42,7 +103,6 @@ You can use this method to order them into:
     frame2.jpg
     ...
 '''
-
 def rename_files(directory_path):
     # Get a list of all files in the directory
     files = os.listdir(directory_path)
@@ -57,8 +117,7 @@ def rename_files(directory_path):
         os.rename(old_path, new_path)
 
 
-source_dir = 'datasets/resize_datasets'
-target_dir = 'datasets/resize'
-val_size = 0.15  # 20% of the data will be in the validation set
+source_dir = 'datasets/resize'
+val_size = 0.2  # 20% of the data will be in the validation set
 
-train_val_split(source_dir, target_dir, val_size)
+split_into_train_val(source_dir, val_size)
