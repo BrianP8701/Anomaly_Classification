@@ -12,19 +12,17 @@
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.optim import lr_scheduler
 import torch.backends.cudnn as cudnn
-import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import time
 import os
-from PIL import Image
 from tempfile import TemporaryDirectory
 from sklearn.metrics import precision_score, recall_score, f1_score
 from model_repository import model_dict, weights_dict
+from torchvision.transforms import functional as F
+from sklearn.metrics import precision_recall_fscore_support
 
 def train_model(model, data_dir, destination_path, batch_size, num_epochs):
     cudnn.benchmark = True
@@ -32,19 +30,19 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
     
     # Data augmentation and normalization for training
     # Just normalization for validation
+    # Your transformations
     data_transforms = {
         'train': transforms.Compose([
-            transforms.RandomRotation(30),  # add random rotation
-            transforms.ToTensor(),  # convert image to PyTorch tensor
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # normalize image data
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]),
         'val': transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    
-    # Load datasets
+        
+    # Create datasets
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                             data_transforms[x])
                     for x in ['train', 'val']}
@@ -63,24 +61,31 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
 
     # Decay LR by a factor of 0.1 every 5 epochs
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1) 
+    
+    # Initialize list for metrics
+    train_precisions = [] 
+    train_recalls = []
+    train_f1_scores = []
+    val_precisions = []
+    val_recalls = []
+    val_f1_scores = []
 
     since = time.time()
-    
+
     # Create a temporary directory to save training checkpoints
     with TemporaryDirectory() as tempdir:
         best_model_params_path = os.path.join(tempdir, destination_path)
 
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
-        # y_true = []
-        # y_pred = []
-        # precision_list = []
-        # recall_list = []
-        # f1_list = []
 
         for epoch in range(num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
+            
+            # At the beginning of each epoch, initialize lists to store all predictions and true labels
+            all_preds = []
+            all_labels = []
 
             # Each epoch has a training and validation phase
             for phase in ['train', 'val']:
@@ -106,34 +111,36 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
                         outputs = model(inputs)
                         _, preds = torch.max(outputs, 1)
                         loss = criterion(outputs, labels)
-                        
-                        # # Append the true labels and predictions to your lists
-                        # y_true.extend(labels.cpu().numpy())
-                        # y_pred.extend(preds.cpu().numpy())
 
                         # backward + optimize only if in training phase
                         if phase == 'train':
                             loss.backward()
                             optimizer.step()
-
+                    
+                    all_preds.extend(preds.cpu().numpy())
+                    all_labels.extend(labels.cpu().numpy())
+                    
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
                 if phase == 'train':
                     scheduler.step()
-                    
-                # # Calculate metrics
-                # precision = precision_score(y_true, y_pred, average='weighted')
-                # recall = recall_score(y_true, y_pred, average='weighted')
-                # f1 = f1_score(y_true, y_pred, average='weighted')
-                
-                # precision_list.append(precision)
-                # recall_list.append(recall)
-                # f1_list.append(f1)
                 
                 epoch_loss = running_loss / dataset_sizes[phase]
                 epoch_acc = running_corrects.double() / dataset_sizes[phase]
-
+                
+                # Calculate and save precision, recall, and f1 score
+                precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='weighted', zero_division=0)
+                if(phase == 'train'):
+                    train_precisions.append(precision)
+                    train_recalls.append(recall)
+                    train_f1_scores.append(f1)
+                else:
+                    val_precisions.append(precision)
+                    val_recalls.append(recall)
+                    val_f1_scores.append(f1)
+                
+                print(f'{phase} Precision: {precision:.4f} Recall: {recall:.4f} F1 score: {f1:.4f}')
                 print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
                 # deep copy the model
@@ -146,55 +153,61 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
         time_elapsed = time.time() - since
         print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
         print(f'Best val Acc: {best_acc:4f}')
-        # print(f'Precision: {precision_list}')
-        # print(f'Recall: {recall_list}')
-        # print(f'F1: {f1_list}')
 
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path))
         
-    return model, best_acc
+    return model, [best_acc, train_precisions, train_recalls, train_f1_scores, val_precisions, val_recalls, val_f1_scores]
+
+def remove_ds_store_files(path):
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file == ".DS_Store":
+                os.remove(os.path.join(root, file))
 
 # Finetune weights of pretrained model on new dataset
-def finetune(model, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
+def finetune(model_name, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
     # Initialize model with pretrained weights
-    weights = weights_dict[model]
-    model = model_dict[model](weights=weights)
+    weights = weights_dict[model_name]
+    model = model_dict[model_name](weights=weights)
         
     # Reset final fully connected layer
-    if(model == 'efficientnet_v2_s' or model == 'efficientnet_v2_m' or model == 'efficientnet_v2_l'):
+    if(model_name == 'efficientnet_v2_s' or model_name == 'efficientnet_v2_m' or model_name == 'efficientnet_v2_l'):
         num_ftrs = model.classifier[1].in_features
         model.classifier[1] = nn.Linear(num_ftrs, num_of_classes)
-    elif(model == 'mobilenet_v3_small' or model == 'mobilenet_v3_large'):
+    elif(model_name == 'mobilenet_v3_small' or model_name == 'mobilenet_v3_large'):
         num_ftrs = model.classifier[3].in_features
         model.classifier[3] = nn.Linear(num_ftrs, num_of_classes)
-    elif(model == 'resnet18' or model == 'resnet50' or model == 'resnet152'):
+    elif(model_name == 'resnet18' or model_name == 'resnet50' or model_name == 'resnet152'):
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_of_classes)
 
-    model, accuracy = train_model(model, data_dir, destination_path, batch_size, num_epochs)
-    return model, accuracy
+    model, metrics = train_model(model, data_dir, destination_path, batch_size, num_epochs)
+    return model, metrics
 
 # Freeze weights of pretrained model and train only the final fully connected layer
-def transfer_learning(model, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
+def transfer_learning(model_name, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
     # Initialize model with pretrained weights
-    weights = weights_dict[model]
-    model = model_dict[model](weights=weights)
+    weights = weights_dict[model_name]
+    model = model_dict[model_name](weights=weights)
     
     # Freeze all layers
     for param in model.parameters():
         param.requires_grad = False
         
     # Reset final fully connected layer
-    if(model == 'efficientnet_v2_s' or model == 'efficientnet_v2_m' or model == 'efficientnet_v2_l'):
+    if(model_name == 'efficientnet_v2_s' or model_name == 'efficientnet_v2_m' or model_name == 'efficientnet_v2_l'):
         num_ftrs = model.classifier[1].in_features
         model.classifier[1] = nn.Linear(num_ftrs, num_of_classes)
-    elif(model == 'mobilenet_v3_small' or model == 'mobilenet_v3_large'):
+        # model.classifier[1].requires_grad = True
+    elif(model_name == 'mobilenet_v3_small' or model_name == 'mobilenet_v3_large'):
         num_ftrs = model.classifier[3].in_features
         model.classifier[3] = nn.Linear(num_ftrs, num_of_classes)
-    elif(model == 'resnet18' or model == 'resnet50' or model == 'resnet152'):
+        # model.classifier[3].requires_grad = True
+    elif(model_name == 'resnet18' or model_name == 'resnet50' or model_name == 'resnet152'):
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_of_classes)
+        # model.fc.requires_grad = True
         
-    model, accuracy = train_model(model, data_dir, destination_path, batch_size, num_epochs)
-    return model, accuracy
+    model, metrics = train_model(model, data_dir, destination_path, batch_size, num_epochs)
+    return model, metrics
