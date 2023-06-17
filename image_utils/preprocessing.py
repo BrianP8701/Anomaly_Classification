@@ -12,6 +12,10 @@ from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import time
+import os
+import random
+from torchvision.transforms import functional as F
+import shutil
 
 '''
 Gaussian Mixture Model Preprocessing with Extra Sensitivty for Material
@@ -350,3 +354,95 @@ def preprocess_image(img_path):
     img = img.filter(ImageFilter.UnsharpMask(radius=8, percent=100))
 
     return np.array(img)
+
+'''
+Data Augmentation
+    This will not just change images, but generate new images with the augmentation applied
+    in your chosen output_dir. The number of files to augment is specified by num_files_to_augment.
+    
+    Params:
+        data_dir: This is the path to your input directory, which contains the original, unaugmented images.
+        output_dir: This is the path to the directory where the function will save the newly generated, augmented images.
+        num_files_to_augment: This is the number of images you want to select randomly from each class for augmentation.
+        augmentations_per_image: This optional parameter specifies how many augmented versions to create for each selected image. The default is 1.
+        rotation_degrees, brightness, contrast, saturation, hue: These optional parameters control the range of the respective transformations. They default to predefined values.
+    
+    Input Directory Format:
+    
+        input_directory/
+        ├── class1/
+        │   ├── frame0.jpg
+        │   ├── frame1.jpg
+        │   └── ...
+        ├── class2/
+        │   ├── frame0.jpg
+        │   ├── frame1.jpg
+        │   └── ...
+        └── ...
+        
+    Output Format:
+    
+        output_directory/
+        ├── class1/
+        │   ├── frame0.jpg (original)
+        │   ├── frame1.jpg (original)
+        │   ├── frame2.jpg (augmented)
+        │   ├── frame3.jpg (augmented)
+        │   └── ...
+        ├── class2/
+        │   ├── frame0.jpg (original)
+        │   ├── frame1.jpg (original)
+        │   ├── frame2.jpg (augmented)
+        │   ├── frame3.jpg (augmented)
+        │   └── ...
+        └── ...
+'''
+def augment_dataset(data_dir, output_dir, num_files_to_augment, augmentations_per_image=1, rotation_degrees=30, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1):
+    
+    # 1. Loop through each class in the input directory.
+    print(os.listdir(data_dir))
+    for class_name in os.listdir(data_dir):
+        class_dir = os.path.join(data_dir, class_name)
+
+        # 2. Make a folder with the same class name in the output directory. Copy all the images in the class in the input directory to the class in the output directory.
+        output_class_dir = os.path.join(output_dir, class_name)
+        if not os.path.exists(output_class_dir):
+            os.makedirs(output_class_dir)
+            
+        # Skip if this is not a directory
+        if not os.path.isdir(class_dir):
+            continue
+
+        image_files = [f for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+
+        # Copy all image files to the output directory
+        for image_file in image_files:
+            shutil.copy2(os.path.join(class_dir, image_file), output_class_dir)
+
+        image_files_to_augment = random.sample(image_files, num_files_to_augment)
+
+        for image_file in image_files_to_augment:
+            image_path = os.path.join(class_dir, image_file)
+            image = Image.open(image_path)
+
+            for i in range(augmentations_per_image):
+                # 3. Apply data augmentations.
+                # Apply random rotation
+                augmented_image = F.rotate(image, random.uniform(-rotation_degrees, rotation_degrees))
+
+                # Apply color jitter
+                augmented_image = F.adjust_brightness(augmented_image, random.uniform(1 - brightness, 1 + brightness))
+                augmented_image = F.adjust_contrast(augmented_image, random.uniform(1 - contrast, 1 + contrast))
+                augmented_image = F.adjust_saturation(augmented_image, random.uniform(1 - saturation, 1 + saturation))
+                augmented_image = F.adjust_hue(augmented_image, random.uniform(-hue, hue))
+
+                # 4. Add these augmented to the end of this class with framex.jpg... beginning from the last frame in that folder.
+                last_frame = max([int(f[5:-4]) for f in os.listdir(output_class_dir) if f.startswith('frame') and f.endswith('.jpg')], default=0)
+                output_image_path = os.path.join(output_class_dir, 'frame' + str(last_frame + 1) + '.jpg')
+
+                augmented_image.save(output_image_path)
+    # 5. Repeat from step 1 until there are no more classes in the input directory.
+            
+input_path = 'raw_data/resize'
+output_path = 'dataset/resize'
+augment_dataset(input_path, output_path, 15, 1, rotation_degrees=30, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)
