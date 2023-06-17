@@ -157,13 +157,7 @@ def train_model(model, data_dir, destination_path, batch_size, num_epochs):
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path))
         
-    return model, [best_acc, train_precisions, train_recalls, train_f1_scores, val_precisions, val_recalls, val_f1_scores]
-
-def remove_ds_store_files(path):
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if file == ".DS_Store":
-                os.remove(os.path.join(root, file))
+    return model, [best_acc.item(), train_precisions, train_recalls, train_f1_scores, val_precisions, val_recalls, val_f1_scores]
 
 # Finetune weights of pretrained model on new dataset
 def finetune(model_name, data_dir, destination_path, num_of_classes, batch_size=4, num_epochs=25):
