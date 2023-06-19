@@ -12,7 +12,7 @@
             image2.jpg
             ...
         ...
-      
+
     3. Provide the path to where you want to save your model. The model will be saved as a .pt file.
     4. Provide hyperarameters for training. The default values are shown below.  
 '''

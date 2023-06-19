@@ -295,13 +295,11 @@ def simplify(input_path: str):
     img = cv2.imread(input_path)[:,:,0]
     # Get standard deviation across all pixels in image
     x = np.std(img)
-    print(x)
     
     # Compute the 'range' threshold based on the standard deviation
     threshold = 2.04023 * x - 4.78237
-    print(threshold)
+    
     if(x < 20): threshold = 5
-    print(threshold)
     threshold = 5
     
     # Find the maximum pixel intensity in the image
@@ -310,8 +308,7 @@ def simplify(input_path: str):
         for j in range(len(img[0])):
             if(img[i][j] > whitestPixel): whitestPixel = img[i][j]
             
-    # Set all pixels with intensities greater than 'whitestPixel - range' to 255 (white)
-    for i in range(len(img)):
+    # Set all pixels with intensities greater than 'whitestPixel - threshold' to 255
         for j in range(len(img[0])):
             if(img[i][j] > whitestPixel - threshold): img[i][j] = 255
             
@@ -330,7 +327,7 @@ def simplify(input_path: str):
         # Break the loop if no such pixel is found
         if whitestPixel == 0: break
         
-        # Set all pixels with intensities greater than 'whitestPixel - range' and less than 'cutoff' to 'whitestPixel'
+        # Set all pixels with intensities greater than 'whitestPixel - threshold' and less than 'cutoff' to 'whitestPixel'
         for i in range(len(img)):
             for j in range(len(img[0])):
                 if(img[i][j] > whitestPixel - threshold and img[i][j] < cutoff): img[i][j] = whitestPixel
