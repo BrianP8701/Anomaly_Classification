@@ -444,13 +444,15 @@ def augment_dataset(data_dir, output_dir, num_files_to_augment, augmentations_pe
             
 # Define your source and destination folders
 source_folder = "datasets/original/under/frame"
-destination_folder = "datasets/gmms6_224/under/frame"
+destination_folder = "datasets/gmms6_50/under/frame"
 
 frame = 0
 
 while True:
     img_path = source_folder + str(frame) + ".jpg"
     destination_path = destination_folder + str(frame) + ".jpg"
+    
+    # img = resize_image(img_path, destination_path, 50)
     
     img = gmms_preprocess_image(img_path, 6)
     cv2.imwrite(destination_path, img)

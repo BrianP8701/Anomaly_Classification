@@ -146,22 +146,8 @@ def split_into_train_val(data_dir, val_size):
         os.rmdir(class_dir)
         
         # Call rename_files on both the train and val directories for this class
-        rename_files(train_dir)
-        rename_files(val_dir)
-                
-
-def rename_files(directory_path):
-    # Get a list of all files in the directory
-    files = os.listdir(directory_path)
-    
-    # Sort the list of files based on the number in the file name
-    files.sort(key=lambda f: int(f.split('frame')[1].split('.jpg')[0]))
-    
-    # Iterate over the sorted list and rename each file
-    for i, file in enumerate(files):
-        old_path = os.path.join(directory_path, file)
-        new_path = os.path.join(directory_path, f'frame{i}.jpg')
-        os.rename(old_path, new_path)
+        rename_images(train_dir)
+        rename_images(val_dir)
         
 '''            
 If you have a folder of images, use this method to order them into:
@@ -315,3 +301,6 @@ def combine_train_val_datasets(input_folder, destination_folder):
                 destination_file_path = os.path.join(destination_class_path, 'frame{}.jpg'.format(count))
                 shutil.copyfile(source_file_path, destination_file_path)
                 count += 1
+                
+                
+rename_images('datasets/resize/normal')
