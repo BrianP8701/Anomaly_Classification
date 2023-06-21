@@ -23,6 +23,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from model_repository import model_dict, weights_dict
 from torchvision.transforms import functional as F
 from sklearn.metrics import precision_recall_fscore_support
+import json
 
 def train_model(model, data_dir, destination_path, batch_size, num_epochs):
     cudnn.benchmark = True
@@ -205,3 +206,26 @@ def transfer_learning(model_name, data_dir, destination_path, num_of_classes, ba
         
     model, metrics = train_model(model, data_dir, destination_path, batch_size, num_epochs)
     return model, metrics
+
+'''
+    This function adds a dictionary to a JSON file under a given key. If the file does not exist, it will be created.
+    
+    In context of this project, the JSON file is used to store metrics for each model. The key is the model name and the value is a dictionary of metrics.
+'''
+def add_data_to_json(filename, key, sub_dict):
+    try:
+        # If the file exists, load its data. Otherwise, start with an empty dict.
+        if os.path.isfile(filename):
+            with open(filename, 'r') as f:
+                data = json.load(f)
+        else:
+            data = {}
+    except json.decoder.JSONDecodeError:
+        data = {}  # start with an empty dictionary if file is empty
+
+    # Add the new dictionary to the data under the given key
+    data[key] = sub_dict
+
+    # Write the updated data back to the file
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)

@@ -4,6 +4,9 @@
 '''
 from torchvision import models
 
+# Choose one of these when calling the train function
+model_list = ['efficientnet_v2_s', 'efficientnet_v2_l', 'resnet18', 'resnet152', 'mobilenet_v3_small', 'mobilenet_v3_large']
+
 model_dict = {
     "efficientnet_v2_s": models.efficientnet_v2_s,
     "efficientnet_v2_l": models.efficientnet_v2_l,

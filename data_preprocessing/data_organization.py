@@ -303,4 +303,4 @@ def combine_train_val_datasets(input_folder, destination_folder):
                 count += 1
                 
                 
-rename_images('datasets/resize/normal')
+split_into_train_val('datasets/resize', 0.15)
