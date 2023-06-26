@@ -1,8 +1,5 @@
 .DS_Store
 
-models1/
 models/
-data/
-backup/
 
-.DS_STORE
+venv/
