@@ -1,0 +1,20 @@
+Datasets in backup folder:
+    bubble : The original bubble dataset from UBBox         50x50
+    dataset1 : The original 3 class dataset from UBBox      50x50
+    dataset2 : dataset1 + new images from new videos        224x224
+    dataset3 : dataset2 - subtle images                     224x224
+    difficult : Images that gmms6 had trouble weights_dict
+
+Model Folders:
+    models1 : Used bubble and dataset1
+    models2 : Used dataset3
+    models3 : Used dataset3
+
+
+
+Folders:
+    backup : Contains original datasets with classes before any changes
+    data_preprocessing : Contains all the code for collecting, processing and organizing the data
+    training : Contains all the code for training the models
+    metrics : Contains all the code for analyzing metrics collected during training
+    plots : Contains plot images for metrics

@@ -1,5 +1,5 @@
 '''
-Provides methods to organize files and folders to work with the training methods in this repository.
+    This file provides methods to organize files and folders to work with the training methods in this repository.
 '''
 
 import os
@@ -93,6 +93,9 @@ def organize_data(folder_list, destination_folder, class_list):
         data_dir/
             train/
                 class1/
+                    frame0.jpg
+                    frame1.jpg
+                    ...
                 class2/
                 ...
             val/
@@ -196,6 +199,7 @@ def rename_images(folder_path):
             # Increment the counter
             counter += 1
 
+# Given the path to a folder of images, this function will remove duplicate images.
 def remove_duplicates(folder_path):
     # Get the list of all files
     files = os.listdir(folder_path)
@@ -217,28 +221,9 @@ def remove_duplicates(folder_path):
                 else:
                     # Otherwise, add the hash to the list
                     hashes.append(image_hash)
-                    
-# Turns all images in a folder into grayscale
-def convert_to_grayscale_recursive(folder_path):
-    # Recursively traverse all subdirectories
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            # Check if the file is a .jpg image
-            if file.endswith('.jpg'):
-                # Construct the full path to the file
-                file_path = os.path.join(root, file)
-
-                # Read the image
-                img = cv2.imread(file_path)
-
-                # Convert the image to grayscale
-                gray_img = np.dot(img[...,:3], [0.299, 0.587, 0.114])
-
-                # Save the grayscale image back to the same location
-                cv2.imwrite(file_path, gray_img)
 
 """
-    This function consolidates the 'train' and 'val' datasets from a given input folder into a single 
+    This function combines the 'train' and 'val' datasets from a given input folder into a single 
     dataset in the destination folder. The resulting dataset in the destination folder will not have 
     separate 'train' and 'val' directories, but just the class directories.
     
@@ -303,4 +288,3 @@ def combine_train_val_datasets(input_folder, destination_folder):
                 count += 1
                 
                 
-split_into_train_val('datasets/resize', 0.15)

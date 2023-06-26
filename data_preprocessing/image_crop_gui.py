@@ -1,6 +1,8 @@
 '''
     This file provides a specific preprocessing tool to crop images.
     A user may select the size of a crop box with the crop_box_size variable. 
+    
+    Modify the main method to change the input and output paths.
 
         1. Call the main method with your image path and destination path to use the tool.
 
@@ -71,10 +73,9 @@ def main(image_path, destination_path):
     cv2.destroyAllWindows()
     
     
-    
-
 if __name__ == '__main__':
     
+    # Select your image destination and output paths here
     input_path = 'data/under'
     output_path = 'cropped_data/under'
     

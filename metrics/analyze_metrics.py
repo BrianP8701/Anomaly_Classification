@@ -1,3 +1,6 @@
+'''
+    This script is used to analyze the metrics of a model and plot them.
+'''
 import json
 import matplotlib.pyplot as plt
 
@@ -71,6 +74,8 @@ def calculate_range(scores):
         "max": max(scores)
     }
 
+
+# This file accepts metrics, and creates a new JSON file with the metrics in a different format: The ranges of the scores
 def process_file(filename):
     with open(filename, 'r') as f:
         data = json.load(f)
@@ -90,18 +95,9 @@ def process_file(filename):
 
     with open('new_file.json', 'w') as f:
         json.dump(new_data, f, indent=4)
-        
-with open('metrics/metrics.json', 'r') as f:
-        data = json.load(f)
 
-models_data = {
-    'res152_gmms6_transfer': data['res152_gmms6_transfer'],
-    'res152_gmms6_finetune': data['res152_gmms6_finetune'],
-    'res152_classification_transfer': data['res152_classification_transfer'],
-    'res152_classification_finetune': data['res152_classification_finetune']
-}
 
-# Given a JSON file, move all key-value pairs with a key that contains the flag string to a new JSON file
+# Given a JSON file and string (Called flag), move all key-value pairs with a key that contains the flag string to a new JSON file
 def move_bubble_keys(src_path, dst_path, flag):
     # Open and read the source JSON file
     with open(src_path, 'r') as src_file:
@@ -130,6 +126,7 @@ def move_bubble_keys(src_path, dst_path, flag):
     with open(src_path, 'w') as src_file:
         json.dump(src_dict, src_file)
         
+        
 # Given 2 JSON files, combine their key-value pairs into a new JSON file
 def combine_json(file1_path, file2_path, output_path):
     # Open the first file and load the data
@@ -147,7 +144,9 @@ def combine_json(file1_path, file2_path, output_path):
     with open(output_path, 'w') as output_file:
         json.dump(combined_data, output_file)
 
-with open('metrics/metrics_bubble.json', 'r') as src_file:
+
+
+with open('metrics/plots/models2/metrics.json', 'r') as src_file:
     data = json.load(src_file)
         
 max_accuracy = 0
@@ -157,22 +156,23 @@ worst_accuracy_model = ''
 sum = 0
 count = 0
 for model_name, model_data in data.items():
-    if 'transfer' in model_name:
+    if '_s' in model_name:
         sum += model_data['accuracy'][0]
         count+=1
-    print(model_name, model_data['accuracy'][0])
-    if model_data['accuracy'][0] > max_accuracy:
-        max_accuracy = model_data['accuracy'][0]
-        max_accuracy_model = model_name
-    if model_data['accuracy'][0] < worst_accuracy:
-        worst_accuracy = model_data['accuracy'][0]
-        worst_accuracy_model = model_name
-        
+        print(model_name + '\t\t\t' + str(model_data['accuracy'][0]))
+        if model_data['accuracy'][0] > max_accuracy:
+            max_accuracy = model_data['accuracy'][0]
+            max_accuracy_model = model_name
+        if model_data['accuracy'][0] < worst_accuracy:
+            worst_accuracy = model_data['accuracy'][0]
+            worst_accuracy_model = model_name
+print()
 print(sum/count)
 
 print()
 print(max_accuracy_model, max_accuracy)
-print(worst_accuracy_model, worst_accuracy)
+#print(worst_accuracy_model, worst_accuracy)
+
 # all_models = ['efficientnet_v2_s', 'efficientnet_v2_l', 'resnet18', 'resnet152', 'mobilenet_v3_small', 'mobilenet_v3_large']
 # all_datasets = ['datasets/bubble', 'datasets/bubble_pad', 'datasets/bubble_resize', 'datasets/classification', 'datasets/gmms6', 'datasets/pad', 'datasets/resize']
 # model_abbreviations = ['eff_s', 'eff_l', 'res18', 'res152', 'mob_s', 'mob_l']
