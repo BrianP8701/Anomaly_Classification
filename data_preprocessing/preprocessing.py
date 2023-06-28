@@ -13,9 +13,7 @@
         - gmm_parameters: This function fits a Gaussian Mixture Model to an image and returns the means and variances of each cluster.
         - create_bar_chart: This function creates a bar chart with the pixel intensities on the x-axis and the counts on the y-axis.
         - create_bar_chart_with_gmm: This function creates a bar chart with the pixel intensities on the x-axis and the counts on the y-axis. It also adds a red line at means and blue lines at means +/- standard deviations.
-
 '''
-
 from PIL import Image, ImageOps, ImageFilter
 import numpy as np
 import cv2
@@ -23,7 +21,6 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
-import time
 import os
 import random
 from torchvision.transforms import functional as F
@@ -297,8 +294,84 @@ def augment_dataset(data_dir, output_dir, num_files_to_augment, augmentations_pe
 
                 augmented_image.save(output_image_path)
     # 5. Repeat from step 1 until there are no more classes in the input directory.
+
             
-            
+# This is the same as the augment_dataset function, expect it augments the images in the input directory instead of copying them to a new one.
+def augment_dataset_2(data_dir, num_files_to_augment, augmentations_per_image=1, rotation_degrees=30, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1):
+    
+    # Loop through each class in the directory
+    for class_name in os.listdir(data_dir):
+        class_dir = os.path.join(data_dir, class_name)
+
+        # Skip if this is not a directory
+        if not os.path.isdir(class_dir):
+            continue
+
+        image_files = [f for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+        image_files_to_augment = random.sample(image_files, num_files_to_augment)
+
+        for image_file in image_files_to_augment:
+            image_path = os.path.join(class_dir, image_file)
+            image = Image.open(image_path)
+
+            for i in range(augmentations_per_image):
+                # Apply data augmentations
+                augmented_image = F.rotate(image, random.uniform(-rotation_degrees, rotation_degrees))
+                augmented_image = F.adjust_brightness(augmented_image, random.uniform(1 - brightness, 1 + brightness))
+                augmented_image = F.adjust_contrast(augmented_image, random.uniform(1 - contrast, 1 + contrast))
+                augmented_image = F.adjust_saturation(augmented_image, random.uniform(1 - saturation, 1 + saturation))
+                augmented_image = F.adjust_hue(augmented_image, random.uniform(-hue, hue))
+
+                # Save the augmented images to the same class directory
+                last_frame = max([int(f[5:-4]) for f in os.listdir(class_dir) if f.startswith('frame') and f.endswith('.jpg')], default=0)
+                output_image_path = os.path.join(class_dir, 'frame' + str(last_frame + 1) + '.jpg')
+
+                augmented_image.save(output_image_path)
+
+'''
+    This function augments the dataset in-place by flipping a specified number of images in each class folder 
+    vertically and horizontally. The new images are added to the same directory as the originals, with new filenames.
+    
+    The directory should have the following structure:
+        directory/
+        ├── class1/
+        │   ├── frame0.jpg
+        │   ├── frame1.jpg
+        │   └── ...
+        ├── class2/
+        │   ├── frame0.jpg
+        │   ├── frame1.jpg
+        │   └── ...
+        └── ...
+'''
+def flip_images_in_directory(data_dir, num_files_to_flip, flips_per_image=1):
+    # Loop through each class in the directory
+    for class_name in os.listdir(data_dir):
+        class_dir = os.path.join(data_dir, class_name)
+
+        # Skip if this is not a directory
+        if not os.path.isdir(class_dir):
+            continue
+
+        image_files = [f for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+        image_files_to_flip = random.sample(image_files, num_files_to_flip)
+
+        for image_file in image_files_to_flip:
+            image_path = os.path.join(class_dir, image_file)
+            image = Image.open(image_path)
+
+            for i in range(flips_per_image):
+                # Apply horizontal and vertical flips
+                flipped_image = ImageOps.flip(image)  # Vertical flip
+                flipped_image = ImageOps.mirror(flipped_image)  # Horizontal flip
+
+                # Save the flipped images to the same class directory
+                last_frame = max([int(f[5:-4]) for f in os.listdir(class_dir) if f.startswith('frame') and f.endswith('.jpg')], default=0)
+                output_image_path = os.path.join(class_dir, 'frame' + str(last_frame + 1) + '.jpg')
+
+                flipped_image.save(output_image_path)
+
+
 # Turns all images in a folder into grayscale
 def convert_to_grayscale_recursive(folder_path):
     # Recursively traverse all subdirectories
@@ -477,24 +550,3 @@ def flatten(matrix):
 def unflatten(vector, original_shape):
     # Use numpy's reshape function to convert the vector back to the original matrix shape
     return vector.reshape(original_shape)
-
-
-# This is just me tempratily using the functions above to preprocess a dataset
-
-
-# Define your source and destination folders
-source_folder = "datasets/original/under/frame"
-destination_folder = "datasets/gmms6_50/under/frame"
-
-frame = 0
-
-while True:
-    img_path = source_folder + str(frame) + ".jpg"
-    destination_path = destination_folder + str(frame) + ".jpg"
-    
-    # img = resize_image(img_path, destination_path, 50)
-    
-    img = gmms_preprocess_image(img_path, 6)
-    cv2.imwrite(destination_path, img)
-    
-    frame += 1

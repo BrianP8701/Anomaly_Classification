@@ -4,7 +4,9 @@ Datasets in backup folder:
     dataset2 : dataset1 + new images from new videos        224x224
     dataset3 : dataset2 - subtle images                     224x224
     difficult : Images that gmms6 had trouble weights_dict
-
+    dataset4: Contains 3rd round of new images from new videos (All different from dataset3)
+    dataset5: dataset3 + dataset4
+    
 Model Folders:
     models1 : Used bubble and dataset1
     models2 : Used dataset3
@@ -18,3 +20,68 @@ Folders:
     training : Contains all the code for training the models
     metrics : Contains all the code for analyzing metrics collected during training
     plots : Contains plot images for metrics
+
+
+
+
+Videos I already used for dataset:
+
+/Users/brianprzezdziecki/Downloads/Run37_0620-103254.mov
+/Users/brianprzezdziecki/Downloads/Run40_0620-113523.mov
+/Users/brianprzezdziecki/Downloads/Run41_0620-114118.mov
+/Users/brianprzezdziecki/Downloads/Run43_0620-120559.mov
+/Users/brianprzezdziecki/Downloads/Run45_0620-123429.mov
+/Users/brianprzezdziecki/Downloads/Run48_0621-104826.mov
+/Users/brianprzezdziecki/Downloads/Run49_0621-105632.mov
+/Users/brianprzezdziecki/Downloads/Run52_0621-113209.mov
+/Users/brianprzezdziecki/Downloads/Run53_0621-113753.mov
+/Users/brianprzezdziecki/Downloads/Run54_0621-115335.mov
+/Users/brianprzezdziecki/Downloads/Run55_0622-100823.mov
+/Users/brianprzezdziecki/Downloads/Run56_0622-101511.mov
+/Users/brianprzezdziecki/Downloads/Run57_0622-103209.mov
+/Users/brianprzezdziecki/Downloads/Run58_0622-103940.mov
+/Users/brianprzezdziecki/Downloads/Run63_0622-113927.mov
+/Users/brianprzezdziecki/Downloads/Run64_0623-100908.mov
+/Users/brianprzezdziecki/Downloads/Run65_0623-101652.mov
+/Users/brianprzezdziecki/Downloads/Run66_0623-103529.mov
+/Users/brianprzezdziecki/Downloads/Run67_0623-104336.mov
+/Users/brianprzezdziecki/Downloads/Run68_0623-105728.mov
+/Users/brianprzezdziecki/Downloads/Run69_0623-110430.mov
+/Users/brianprzezdziecki/Downloads/Run70_0623-111035.mov
+/Users/brianprzezdziecki/Downloads/Run71_0623-112543.mov
+/Users/brianprzezdziecki/Downloads/Run72_0623-113126.mov
+
+/Users/brianprzezdziecki/Downloads/Run1_0614-102757.mov
+/Users/brianprzezdziecki/Downloads/Run2_0614-103913.mov
+/Users/brianprzezdziecki/Downloads/Run3_0614-105703.mov
+/Users/brianprzezdziecki/Downloads/Run4_0614-111719.mov
+/Users/brianprzezdziecki/Downloads/Run5_0614-112452.mov
+/Users/brianprzezdziecki/Downloads/Run6_0614-114320.mov
+/Users/brianprzezdziecki/Downloads/Run7_0614-115048.mov
+/Users/brianprzezdziecki/Downloads/Run8_0614-120518.mov
+/Users/brianprzezdziecki/Downloads/Run9_0614-121143.mov
+/Users/brianprzezdziecki/Downloads/Run11_0612-104248.mov
+/Users/brianprzezdziecki/Downloads/Run12_0612-112505.mov
+/Users/brianprzezdziecki/Downloads/Run13_0612-114923.mov
+/Users/brianprzezdziecki/Downloads/Run14_0612-120207.mov
+/Users/brianprzezdziecki/Downloads/Run15_0612-122414.mov
+/Users/brianprzezdziecki/Downloads/Run16_0612-123105.mov
+/Users/brianprzezdziecki/Downloads/Run17_0612-130002.mov
+/Users/brianprzezdziecki/Downloads/Run18_0612-130933.mov
+/Users/brianprzezdziecki/Downloads/Run19_0615-103822.mov
+/Users/brianprzezdziecki/Downloads/Run20_0615-104731.mov
+/Users/brianprzezdziecki/Downloads/Run21_0615-111458.mov
+/Users/brianprzezdziecki/Downloads/Run22_0615-112530.mov
+/Users/brianprzezdziecki/Downloads/Run23_0615-114626.mov
+/Users/brianprzezdziecki/Downloads/Run24_0615-115558.mov
+/Users/brianprzezdziecki/Downloads/Run25_0615-121546.mov
+/Users/brianprzezdziecki/Downloads/Run26_0615-122352.mov
+/Users/brianprzezdziecki/Downloads/Run27_0615-123927.mov
+/Users/brianprzezdziecki/Downloads/Run10609-103008.mov
+/Users/brianprzezdziecki/Downloads/Run20609-132524.mov
+/Users/brianprzezdziecki/Downloads/Run40609-112508.mov
+/Users/brianprzezdziecki/Downloads/Run50609-120919.mov
+/Users/brianprzezdziecki/Downloads/Run60609-123311.mov
+/Users/brianprzezdziecki/Downloads/Run70609-124228.mov
+/Users/brianprzezdziecki/Downloads/Run80609-125135.mov
+/Users/brianprzezdziecki/Downloads/Run90609-131547.mov

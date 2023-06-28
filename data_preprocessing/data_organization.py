@@ -1,7 +1,6 @@
 '''
     This file provides methods to organize files and folders to work with the training methods in this repository.
 '''
-
 import os
 import shutil
 from sklearn.model_selection import train_test_split
@@ -11,6 +10,8 @@ import hashlib
 import cv2
 import numpy as np
 import shutil
+import glob
+import re
 
 """
     This function organizes .jpg files into their respective class folders.
@@ -163,8 +164,10 @@ def rename_images(folder_path):
     # Get the list of all files
     files = os.listdir(folder_path)
 
-    # Sort them by creation time
-    files.sort(key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+    # Sort alphabetically
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    files = sorted(files, key=alphanum_key)
 
     # Initialize a counter
     counter = 0
@@ -286,5 +289,145 @@ def combine_train_val_datasets(input_folder, destination_folder):
                 destination_file_path = os.path.join(destination_class_path, 'frame{}.jpg'.format(count))
                 shutil.copyfile(source_file_path, destination_file_path)
                 count += 1
+
+
+"""
+    This function takes a path to a dataset directory and a destination directory, 
+    and it copies the dataset into the destination directory, splitting it into 
+    training, validation, and test sets.
+
+    The dataset directory should be organized into subdirectories, where each
+    subdirectory contains the images for a specific class. 
+"""        
+def split_dataset(source_dir, dest_dir, train_size=0.7, val_size=0.2, test_size=0.1):
+
+    if not os.path.isdir(source_dir):
+        raise ValueError(f"Source directory {source_dir} does not exist.")
+
+    # Create train, val, and test directories
+    os.makedirs(os.path.join(dest_dir, 'train'), exist_ok=True)
+    os.makedirs(os.path.join(dest_dir, 'val'), exist_ok=True)
+    os.makedirs(os.path.join(dest_dir, 'test'), exist_ok=True)
+
+    for class_dir in os.listdir(source_dir):
+        class_dir_path = os.path.join(source_dir, class_dir)
+
+        # Check if it's a directory
+        if os.path.isdir(class_dir_path):
+            images = os.listdir(class_dir_path)
+
+            # Shuffle the list of images to ensure a random split
+            np.random.shuffle(images)
+
+            # Split the images into train, val, and test
+            train, val, test = np.split(images, [int(train_size*len(images)), int((train_size + val_size)*len(images))])
+
+            for image_set, set_name in zip([train, val, test], ['train', 'val', 'test']):
+                dest_set_dir = os.path.join(dest_dir, set_name, class_dir)
+                os.makedirs(dest_set_dir, exist_ok=True)
+
+                for image in image_set:
+                    shutil.copy(os.path.join(class_dir_path, image), os.path.join(dest_set_dir, image))
+
+
+# This is the same as the split_dataset method, expect it modifies the source directory in place instead of copying it.
+def split_dataset_2(source_dir, train_size=0.7, val_size=0.2, test_size=0.1):
+
+    if not os.path.isdir(source_dir):
+        raise ValueError(f"Source directory {source_dir} does not exist.")
+
+    # Create train, val, and test directories
+    os.makedirs(os.path.join(source_dir, 'train'), exist_ok=True)
+    os.makedirs(os.path.join(source_dir, 'val'), exist_ok=True)
+    os.makedirs(os.path.join(source_dir, 'test'), exist_ok=True)
+
+    for class_dir in os.listdir(source_dir):
+        class_dir_path = os.path.join(source_dir, class_dir)
+
+        # Check if it's a directory
+        if os.path.isdir(class_dir_path):
+            images = os.listdir(class_dir_path)
+
+            # Skip if it's train, val, or test directory
+            if class_dir in ['train', 'val', 'test']:
+                continue
+
+            # Shuffle the list of images to ensure a random split
+            np.random.shuffle(images)
+
+            # Split the images into train, val, and test
+            train, val, test = np.split(images, [int(train_size*len(images)), int((train_size + val_size)*len(images))])
+
+            for image_set, set_name in zip([train, val, test], ['train', 'val', 'test']):
+                dest_set_dir = os.path.join(source_dir, set_name, class_dir)
+                os.makedirs(dest_set_dir, exist_ok=True)
+
+                for image in image_set:
+                    shutil.move(os.path.join(class_dir_path, image), os.path.join(dest_set_dir, image))
+                    
+                # Order the images in the destination directory
+                rename_images(dest_set_dir)
+                print(dest_set_dir)
+                    
+                    
+"""
+    This function copies all .jpg images from a list of source folders to a new destination folder.
+    
+    Each source folder is expected to contain subfolders where the name of each subfolder corresponds 
+    to the class name of the images it contains. All images should be .jpg format.
+    
+    The function will create a new destination folder and replicate the class subfolder structure. 
+    It will then copy all images to their corresponding class subfolder in the new destination folder, 
+    and rename the images in the format 'frameX.jpg' where X is an integer to avoid overwriting any images.
+    
+    Parameters:
+    src_folders : list of str
+        List of paths to the source folders.
+    dest_folder : str
+        Path to the destination folder.
+    """
+def copy_images_to_new_folder(src_folders, dest_folder):
+    # Ensure the destination folder exists
+    os.makedirs(dest_folder, exist_ok=True)
+
+    # Keep track of the image indices for each class
+    class_image_indices = {}
+
+    # Iterate over each source folder
+    for src_folder in src_folders:
+        # Get the list of subfolders (classes) in the source folder
+        subfolders = [f.path for f in os.scandir(src_folder) if f.is_dir()]
+
+        # Iterate over each subfolder
+        for subfolder in subfolders:
+            class_name = os.path.basename(subfolder)
+            
+            # Ensure the destination subfolder exists
+            dest_subfolder = os.path.join(dest_folder, class_name)
+            os.makedirs(dest_subfolder, exist_ok=True)
+
+            # Get the list of images in the subfolder
+            images = glob.glob(os.path.join(subfolder, '*.jpg'))
+
+            # Iterate over each image
+            for img_path in images:
+                # Get the current image index for this class, or start at 0
+                img_index = class_image_indices.get(class_name, 0)
                 
+                # Construct the new image path
+                new_img_path = os.path.join(dest_subfolder, f'frame{img_index}.jpg')
                 
+                # Copy the image to the new path
+                shutil.copyfile(img_path, new_img_path)
+                
+                # Update the image index for this class
+                class_image_indices[class_name] = img_index + 1
+
+# # Given a directory, this function returns a list of the names of all subfolders in that directory.
+# def get_subfolder_names(directory):
+#     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+#     return subfolders
+
+# folders = ['datasets/backup/dataset3', 'datasets/backup/dataset4']
+# copy_images_to_new_folder(folders, 'data')
+

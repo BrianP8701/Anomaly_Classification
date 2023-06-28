@@ -76,8 +76,8 @@ def main(image_path, destination_path):
 if __name__ == '__main__':
     
     # Select your image destination and output paths here
-    input_path = 'data/under'
-    output_path = 'cropped_data/under'
+    input_path = 'dataset4/over'
+    output_path = 'data/over'
     
     # I'm using it to loop through a bunch of images and crop them all one by one
     frame = 0
