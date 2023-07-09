@@ -6,3 +6,5 @@ venv/
 datasets/
 
 __pycache__/
+
+notes.txt
