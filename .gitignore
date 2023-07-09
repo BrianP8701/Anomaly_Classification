@@ -3,5 +3,6 @@
 models/
 
 venv/
+datasets/
 
 __pycache__/

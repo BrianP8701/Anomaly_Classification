@@ -22,42 +22,37 @@ import os
 bottom_right_corner = (0, 0)
 mouse_position = (0, 0)
 crop_box_size = 85  # Size of the crop box
-# Initialize boolean representing whether cropping is being performed or not
-crop = False
-
+        
 def on_mouse(event, x, y, flags, params):
-    global bottom_right_corner, crop, mouse_position
+    global bottom_right_corner, mouse_position
 
     # Start to Draw Rectangle
     if event == cv2.EVENT_LBUTTONDOWN:
-        crop = True
         bottom_right_corner = (x, y)  # top right corner of rectangle
 
     elif event == cv2.EVENT_MOUSEMOVE:
         mouse_position = (x, y)
 
     elif event == cv2.EVENT_LBUTTONUP:
-        crop = False
         bottom_right_corner = (x, y)
 
-def main(image_path, destination_path):
+def main(image_path, destination_path, image_name):
     # Set path of image
     
     image = cv2.imread(image_path)
 
-    cv2.namedWindow('image')
-    cv2.setMouseCallback('image', on_mouse)
+    cv2.namedWindow(image_name)
+    cv2.setMouseCallback(image_name, on_mouse)
 
     while True:
         img = image.copy()
         cv2.rectangle(img, (bottom_right_corner[0] - crop_box_size, bottom_right_corner[1]), (bottom_right_corner[0], bottom_right_corner[1]-crop_box_size), (255, 255, 255), 2)
         cv2.rectangle(img, (mouse_position[0] - crop_box_size, mouse_position[1]), (mouse_position[0], mouse_position[1]-crop_box_size), (0, 255, 0), 2)
 
-        cv2.imshow('image', img)
+        cv2.imshow(image_name, img)
 
         # Exit cropping mode on pressing 'c'
-        if cv2.waitKey(1) & 0xFF == ord('c'):
-            crop = False
+        if cv2.waitKey(10) & 0xFF == ord('c'):
             break
 
     # Crop the image
@@ -66,7 +61,7 @@ def main(image_path, destination_path):
     # Display the cropped image
     cv2.imshow("crop", cropped_img)
     cv2.waitKey(0)
-
+    
     # Save the cropped image
     cv2.imwrite(destination_path, cropped_img)
 
@@ -76,13 +71,13 @@ def main(image_path, destination_path):
 if __name__ == '__main__':
     
     # Select your image destination and output paths here
-    input_path = 'dataset4/over'
-    output_path = 'data/over'
+    input_path = 'dataset1/under'
+    output_path = 'data/under'
     
     # I'm using it to loop through a bunch of images and crop them all one by one
     frame = 0
     while True:
         image_path = f'{input_path}/frame{frame}.jpg'  # Replace this with your image path
         destination_path = f'{output_path}/frame{frame}.jpg'
-        main(image_path, destination_path)
+        main(image_path, destination_path, f'frame{frame}')
         frame += 1

@@ -19,14 +19,13 @@
 import train_model as train
 from torchvision import datasets, models, transforms
 from model_repository import model_dict, weights_dict
-import json
-import os
 
 # NOTE - eff to mob || res to eff || mob to res
 
-all_models = ['mobilenet_v3_small']
-all_datasets = ['datasets/original', 'datasets/resize', 'datasets/gmms6_50', 'datasets/gmms6_224']
-model_abbreviations = ['mob_s']
+all_models = ['mobilenet_v3_small', 'mobilenet_v3_large', 'resnet18', 'resnet152']
+all_datasets = ['datasets/gmms_224', 'datasets/original', 'datasets/gmms_actually50', 'datasets/gmms_50', 'datasets/resize']
+model_abbreviations = ['mob_s', 'mob_l', 'res18', 'res152']
+json_path = 'metrics/metrics.json'
 
 model_index = 0
 # Loop through all models
@@ -37,31 +36,35 @@ for model_name in all_models:
         
         key = model_abbreviations[model_index] + '_' + dataset.split('/')[1] + '_transfer'
         destination_path = '/Users/brianprzezdziecki/Research/Mechatronics/My_code/Anomaly_Classification/models/' + key + '.pt'
-        model, metrics = train.transfer_learning(model_name=model_name, data_dir=dataset, destination_path=destination_path, num_of_classes=3, batch_size=3, num_epochs=25)
+        model, metrics = train.transfer_learning(model_name=model_name, data_dir=dataset, destination_path=destination_path, num_of_classes=3, batch_size=3, num_epochs=13)
         sub_dict = {
             'accuracy': [metrics[0]],
-            'train_precisions': metrics[1],
-            'train_recalls': metrics[2],
-            'train_f1_scores': metrics[3],
-            'val_precisions': metrics[4],
-            'val_recalls': metrics[5],
-            'val_f1_scores': metrics[6]
+            'val_accuracy': [metrics[1]],
+            'train_precisions': metrics[2],
+            'train_recalls': metrics[3],
+            'train_f1_scores': metrics[4],
+            'val_precisions': metrics[5],
+            'val_recalls': metrics[6],
+            'val_f1_scores': metrics[7]
         }
-        train.add_data_to_json('models/metrics.json', key, sub_dict)
+        train.add_data_to_json(json_path, key, sub_dict)
+        
+        
         
         key = model_abbreviations[model_index] + '_' + dataset.split('/')[1] + '_finetune'
         destination_path = '/Users/brianprzezdziecki/Research/Mechatronics/My_code/Anomaly_Classification/models/' + key + '.pt'
-        model, metrics = train.finetune(model_name=model_name, data_dir=dataset, destination_path=destination_path, num_of_classes=3, batch_size=3, num_epochs=25)
+        model, metrics = train.finetune(model_name=model_name, data_dir=dataset, destination_path=destination_path, num_of_classes=3, batch_size=3, num_epochs=13)
         
         sub_dict = {
             'accuracy': [metrics[0]],
-            'train_precisions': metrics[1],
-            'train_recalls': metrics[2],
-            'train_f1_scores': metrics[3],
-            'val_precisions': metrics[4],
-            'val_recalls': metrics[5],
-            'val_f1_scores': metrics[6]
+            'val_accuracy': [metrics[1]],
+            'train_precisions': metrics[2],
+            'train_recalls': metrics[3],
+            'train_f1_scores': metrics[4],
+            'val_precisions': metrics[5],
+            'val_recalls': metrics[6],
+            'val_f1_scores': metrics[7]
         }
-        train.add_data_to_json('models/metrics.json', key, sub_dict)
+        train.add_data_to_json(json_path, key, sub_dict)
         
     model_index += 1

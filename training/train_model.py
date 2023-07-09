@@ -20,7 +20,7 @@ import time
 import os
 from tempfile import TemporaryDirectory
 from sklearn.metrics import precision_score, recall_score, f1_score
-from training.model_repository import model_dict, weights_dict
+from model_repository import model_dict, weights_dict
 from torchvision.transforms import functional as F
 from sklearn.metrics import precision_recall_fscore_support
 import json

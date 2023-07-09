@@ -150,8 +150,8 @@ def split_into_train_val(data_dir, val_size):
         os.rmdir(class_dir)
         
         # Call rename_files on both the train and val directories for this class
-        rename_images(train_dir)
-        rename_images(val_dir)
+        reorder_images(train_dir)
+        reorder_images(val_dir)
         
 '''            
 If you have a folder of images, use this method to order them into:
@@ -160,7 +160,7 @@ If you have a folder of images, use this method to order them into:
     frame2.jpg
     ...
 '''
-def rename_images(folder_path):
+def reorder_images(folder_path):
     # Get the list of all files
     files = os.listdir(folder_path)
 
@@ -366,7 +366,7 @@ def split_dataset_2(source_dir, train_size=0.7, val_size=0.2, test_size=0.1):
                     shutil.move(os.path.join(class_dir_path, image), os.path.join(dest_set_dir, image))
                     
                 # Order the images in the destination directory
-                rename_images(dest_set_dir)
+                reorder_images(dest_set_dir)
                 print(dest_set_dir)
                     
                     
@@ -423,11 +423,13 @@ def copy_images_to_new_folder(src_folders, dest_folder):
                 # Update the image index for this class
                 class_image_indices[class_name] = img_index + 1
 
-# # Given a directory, this function returns a list of the names of all subfolders in that directory.
-# def get_subfolder_names(directory):
-#     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
-#     return subfolders
+# Given a directory, this function returns a list of the names of all subfolders in that directory.
+def get_subfolder_names(directory):
+    subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
+    return subfolders
 
-# folders = ['datasets/backup/dataset3', 'datasets/backup/dataset4']
-# copy_images_to_new_folder(folders, 'data')
+reorder_images('data/under')
 
+#under - 188 + 255 = 443
+#over  - 199 + 246 = 445
+#normal- 207 + 247 = 454

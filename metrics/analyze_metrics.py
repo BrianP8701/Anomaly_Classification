@@ -39,7 +39,7 @@ def plot_metrics(model_data, model_name, destination_path, metrics=['train_preci
         }
 '''
 def plot_multiple_models(models_data, destination_path):
-    metrics = ['accuracy', 'train_precisions', 'train_recalls', 'train_f1_scores', 'val_precisions', 'val_recalls', 'val_f1_scores']
+    metrics = ['accuracy', 'val_accuracy', 'train_precisions', 'train_recalls', 'train_f1_scores', 'val_precisions', 'val_recalls', 'val_f1_scores']
     fig, axs = plt.subplots(len(metrics), figsize=(10, 20))
 
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
@@ -48,6 +48,12 @@ def plot_multiple_models(models_data, destination_path):
     for model_name, model_data in models_data.items():
         for i, metric in enumerate(metrics):
             if metric == 'accuracy':
+                axs[i].scatter([0], model_data[metric], color=colors[color_index], label=model_name)
+                axs[i].set_title(metric)
+                axs[i].set_xlabel('Iteration')
+                axs[i].set_ylabel('Score')
+                axs[i].legend()
+            elif metric == 'val_accuracy':
                 axs[i].scatter([0], model_data[metric], color=colors[color_index], label=model_name)
                 axs[i].set_title(metric)
                 axs[i].set_xlabel('Iteration')
@@ -144,48 +150,54 @@ def combine_json(file1_path, file2_path, output_path):
     with open(output_path, 'w') as output_file:
         json.dump(combined_data, output_file)
 
-
-
-with open('metrics/plots/models2/metrics.json', 'r') as src_file:
-    data = json.load(src_file)
+# Given list of attributes, return a list of means of those attributes
+def get_means(json_path, attributes):
+    with open(json_path, 'r') as src_file:
+        data = json.load(src_file)
         
-max_accuracy = 0
-worst_accuracy = 1
-max_accuracy_model = ''
-worst_accuracy_model = ''
-sum = 0
-count = 0
-for model_name, model_data in data.items():
-    if '_s' in model_name:
-        sum += model_data['accuracy'][0]
-        count+=1
-        print(model_name + '\t\t\t' + str(model_data['accuracy'][0]))
-        if model_data['accuracy'][0] > max_accuracy:
-            max_accuracy = model_data['accuracy'][0]
-            max_accuracy_model = model_name
-        if model_data['accuracy'][0] < worst_accuracy:
-            worst_accuracy = model_data['accuracy'][0]
-            worst_accuracy_model = model_name
-print()
-print(sum/count)
-
-print()
-print(max_accuracy_model, max_accuracy)
-#print(worst_accuracy_model, worst_accuracy)
-
-# all_models = ['efficientnet_v2_s', 'efficientnet_v2_l', 'resnet18', 'resnet152', 'mobilenet_v3_small', 'mobilenet_v3_large']
-# all_datasets = ['datasets/bubble', 'datasets/bubble_pad', 'datasets/bubble_resize', 'datasets/classification', 'datasets/gmms6', 'datasets/pad', 'datasets/resize']
-# model_abbreviations = ['eff_s', 'eff_l', 'res18', 'res152', 'mob_s', 'mob_l']
-
-# model_index = 0
-# for model in all_models:
-#     all_keys = []
-#     for dataset in all_datasets:
-#         key = model_abbreviations[model_index] + '_' + dataset.split('/')[1] + '_finetune'
-#         all_keys.append(key)
-#     sub_dict = {}
-#     for key in all_keys:
-#         sub_dict[key] = data[key]
-#     plot_multiple_models(sub_dict, f'plots/finetune/{model}_finetune.png')
-#     model_index += 1
+    means = []
+    val_means = []
     
+    for attribute in attributes:
+        test_mean = 0
+        val_mean = 0
+        count = 0
+        
+        for model in data.keys():
+            if any(s in model for s in attribute):
+                print(f'{attribute} in {model}')
+                test_mean += data[model]['accuracy'][0]
+                val_mean += data[model]['val_accuracy'][0]
+                count += 1
+                
+        means.append([attribute, test_mean / count])
+        val_means.append([attribute, val_mean / count])
+        
+    return ['test', means], ['val', val_means]
+
+json_path = 'metrics/metrics.json'
+# results = get_means('metrics/metrics.json', [['resize'], ['224']])
+
+
+# print(results[0][0] + ': ' + str(results[0][1][0]) + '  vs  ' + str(results[0][1][1]))
+# print(results[1][0] + ': ' + str(results[1][1][0]) + '  vs  ' + str(results[1][1][1]))
+
+with open(json_path, 'r') as src_file:
+    data = json.load(src_file)
+
+max_accuracy = 0
+min_accuracy = 1
+max_model = ''
+min_model = ''    
+
+for model in data.keys():
+    if data[model]['accuracy'][0] > max_accuracy:
+        max_accuracy = data[model]['accuracy'][0]
+        max_model = model
+    if data[model]['accuracy'][0] < min_accuracy:
+        min_accuracy = data[model]['accuracy'][0]
+        min_model = model
+
+print(max_model + ': ' + str(max_accuracy) + ' ' + str(data[max_model]['val_accuracy'][0]))
+print(min_model + ': ' + str(min_accuracy) + ' ' + str(data[min_model]['val_accuracy'][0]))
+        
