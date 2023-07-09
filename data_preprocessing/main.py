@@ -98,17 +98,10 @@ def prepare_data_2(dataset_path, destination_path, augmentations_per_class=0, fl
             preprocessing.augment_dataset_2(phase_path, augmentations_per_class)
         if flips_per_class > 0:
             preprocessing.flip_images_in_directory(phase_path, flips_per_class)
-        
-        # Delete empty class folders
-        for subfolder in os.listdir(phase_path):
-            subfolder_path = os.path.join(phase_path, subfolder)
-            
-            if os.path.isdir(subfolder_path) and subfolder not in ['train', 'val', 'test']:
-                shutil.rmtree(subfolder_path)
             
             
+dataset_path = 'dataset1'   
+destination_path = 'dataset1_processed'
             
             
-            
-prepare_data_2('datasets/original', 'datasets/gmms_224', gmms=True)
-        
+prepare_data(dataset_path, destination_path, augmentations_per_class=70, flips_per_class=60, gmms=False, num_components=6, grayscale=True, resize=224, train_val_test_split=[0.7, 0.2, 0.1])        
