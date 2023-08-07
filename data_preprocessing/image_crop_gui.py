@@ -21,7 +21,7 @@ import os
 # Initialize the top right corner of the rectangle to be drawn
 bottom_right_corner = (0, 0)
 mouse_position = (0, 0)
-crop_box_size = 85  # Size of the crop box
+crop_box_size = 640  # Size of the crop box
         
 def on_mouse(event, x, y, flags, params):
     global bottom_right_corner, mouse_position
@@ -51,16 +51,19 @@ def main(image_path, destination_path, image_name):
 
         cv2.imshow(image_name, img)
 
+        key = cv2.waitKey(10) & 0xFF
+
         # Exit cropping mode on pressing 'c'
-        if cv2.waitKey(10) & 0xFF == ord('c'):
+        if key == ord('c'):
             break
+        
+        # Return without cropping on pressing 'r'
+        if key == ord('r'):
+            cv2.destroyAllWindows()
+            return
 
     # Crop the image
     cropped_img = image[bottom_right_corner[1] - crop_box_size:bottom_right_corner[1], bottom_right_corner[0] - crop_box_size:bottom_right_corner[0]]
-
-    # Display the cropped image
-    cv2.imshow("crop", cropped_img)
-    cv2.waitKey(0)
     
     # Save the cropped image
     cv2.imwrite(destination_path, cropped_img)
@@ -71,8 +74,8 @@ def main(image_path, destination_path, image_name):
 if __name__ == '__main__':
     
     # Select your image destination and output paths here
-    input_path = 'dataset1/under'
-    output_path = 'data/under'
+    input_path = 'datasets/whole/dataset1/normal'
+    output_path = 'tipdatasetcropped'
     
     # I'm using it to loop through a bunch of images and crop them all one by one
     frame = 0

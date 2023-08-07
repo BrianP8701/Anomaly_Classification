@@ -52,8 +52,6 @@ video_paths = ['/Users/brianprzezdziecki/Downloads/Run51_0621-111654.mov',
                 '/Users/brianprzezdziecki/Downloads/Run81_0626-114629.mov']
 
 
-
-
 def extract_frames(video_path, under_folder, over_folder, normal_folder):
     # If you want to save all images to one folder, just put that one folder in this list
     classes = [under_folder, over_folder, normal_folder]

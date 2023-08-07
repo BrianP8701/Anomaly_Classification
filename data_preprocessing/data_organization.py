@@ -427,9 +427,3 @@ def copy_images_to_new_folder(src_folders, dest_folder):
 def get_subfolder_names(directory):
     subfolders = [f.path for f in os.scandir(directory) if f.is_dir()]
     return subfolders
-
-reorder_images('data/under')
-
-#under - 188 + 255 = 443
-#over  - 199 + 246 = 445
-#normal- 207 + 247 = 454

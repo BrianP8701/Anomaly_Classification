@@ -167,6 +167,8 @@ def get_means(json_path, attributes):
             if any(s in model for s in attribute):
                 print(f'{attribute} in {model}')
                 test_mean += data[model]['accuracy'][0]
+                print(test_mean)
+                print()
                 val_mean += data[model]['val_accuracy'][0]
                 count += 1
                 
@@ -174,30 +176,3 @@ def get_means(json_path, attributes):
         val_means.append([attribute, val_mean / count])
         
     return ['test', means], ['val', val_means]
-
-json_path = 'metrics/metrics.json'
-# results = get_means('metrics/metrics.json', [['resize'], ['224']])
-
-
-# print(results[0][0] + ': ' + str(results[0][1][0]) + '  vs  ' + str(results[0][1][1]))
-# print(results[1][0] + ': ' + str(results[1][1][0]) + '  vs  ' + str(results[1][1][1]))
-
-with open(json_path, 'r') as src_file:
-    data = json.load(src_file)
-
-max_accuracy = 0
-min_accuracy = 1
-max_model = ''
-min_model = ''    
-
-for model in data.keys():
-    if data[model]['accuracy'][0] > max_accuracy:
-        max_accuracy = data[model]['accuracy'][0]
-        max_model = model
-    if data[model]['accuracy'][0] < min_accuracy:
-        min_accuracy = data[model]['accuracy'][0]
-        min_model = model
-
-print(max_model + ': ' + str(max_accuracy) + ' ' + str(data[max_model]['val_accuracy'][0]))
-print(min_model + ': ' + str(min_accuracy) + ' ' + str(data[min_model]['val_accuracy'][0]))
-        

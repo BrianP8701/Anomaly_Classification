@@ -62,6 +62,9 @@ def prepare_data(dataset_path, destination_path, augmentations_per_class=0, flip
         
         if os.path.isdir(subfolder_path) and subfolder not in ['train', 'val', 'test']:
             shutil.rmtree(subfolder_path)
+        else:
+            # Reorder images
+            data_organization.reorder_images(subfolder_path)
             
 
 # This method assumes you have already split your dataset into train, val, and test folders.
@@ -100,8 +103,10 @@ def prepare_data_2(dataset_path, destination_path, augmentations_per_class=0, fl
             preprocessing.flip_images_in_directory(phase_path, flips_per_class)
             
             
-dataset_path = 'dataset1'   
-destination_path = 'dataset1_processed'
+dataset_path = 'datasets/active/original2'   
+destination_path = 'datasets/active/original22'
             
             
-prepare_data(dataset_path, destination_path, augmentations_per_class=70, flips_per_class=60, gmms=False, num_components=6, grayscale=True, resize=224, train_val_test_split=[0.7, 0.2, 0.1])        
+#prepare_data(dataset_path, destination_path, augmentations_per_class=30, flips_per_class=30, gmms=False, num_components=6, grayscale=True, resize=224, train_val_test_split=[0.75, 0.15, 0.1])        
+
+prepare_data_2(dataset_path, destination_path, augmentations_per_class=0, flips_per_class=0, gmms=True, num_components=6, grayscale=True, resize=224)        

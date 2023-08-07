@@ -9,7 +9,7 @@
 import torch
 from PIL import Image
 from torchvision import transforms
-from inference.model_repository import model_dict
+from model_repository import model_dict
 import torch.nn as nn
 
 # You may need to adjust the input size based on the model you are using
@@ -60,3 +60,8 @@ def infer_image(model, image_path):
         predicted_class = torch.argmax(output, dim=1)
 
     return predicted_class.item()
+
+
+
+model = load_model('models/round4/mob_l_gmms2_finetune.pt', 'mobilenet_v3_large')
+answer = infer_image(model, 'datasets/active/gmms2/test/over/frame2.jpg')

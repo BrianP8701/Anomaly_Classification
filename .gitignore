@@ -1,10 +1,10 @@
-.DS_Store
-
 models/
 
 venv/
 datasets/
 
-__pycache__/
 
 notes.txt
+
+.DS_Store
+**/__pycache__/
