@@ -3,11 +3,9 @@
 '''
 import os
 import shutil
-from sklearn.model_selection import train_test_split
 import random
 from PIL import Image
 import hashlib
-import cv2
 import numpy as np
 import shutil
 import glob

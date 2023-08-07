@@ -3,6 +3,7 @@
 '''
 import json
 import matplotlib.pyplot as plt
+import os
 
 ''' 
     Given the metrics for one model, in the form of a dictionary, plot the metrics
@@ -176,3 +177,27 @@ def get_means(json_path, attributes):
         val_means.append([attribute, val_mean / count])
         
     return ['test', means], ['val', val_means]
+
+
+def add_data_to_json(filename, key, sub_dict):
+    '''
+    This function adds a dictionary to a JSON file under a given key. If the file does not exist, it will be created.
+    
+    In context of this project, the JSON file is used to store metrics for each model. The key is the model name and the value is a dictionary of metrics.
+    '''
+    try:
+        # If the file exists, load its data. Otherwise, start with an empty dict.
+        if os.path.isfile(filename):
+            with open(filename, 'r') as f:
+                data = json.load(f)
+        else:
+            data = {}
+    except json.decoder.JSONDecodeError:
+        data = {}  # start with an empty dictionary if file is empty
+
+    # Add the new dictionary to the data under the given key
+    data[key] = sub_dict
+
+    # Write the updated data back to the file
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)

@@ -19,7 +19,7 @@
 import shutil
 import os
 import preprocessing
-import data_organization
+import data_preprocessing.data_organization as data_organization
 from PIL import Image
 
 # This method assumes you haven't split your dataset into train, val, and test folders yet.

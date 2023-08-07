@@ -6,10 +6,10 @@
     
     The output is a number starting from 0. These typically correspond to your classes alphabetically.
 '''
+from model_repository import model_dict
 import torch
 from PIL import Image
 from torchvision import transforms
-from model_repository import model_dict
 import torch.nn as nn
 
 # You may need to adjust the input size based on the model you are using

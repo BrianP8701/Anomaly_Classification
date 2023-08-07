@@ -16,9 +16,9 @@
     3. Provide the path to where you want to save your model. The model will be saved as a .pt file.
     4. Provide hyperarameters for training. The default values are shown below.  
 '''
-import train_model as train
-from torchvision import datasets, models, transforms
+import training.train_model as train
 from model_repository import model_dict, weights_dict
+from torchvision import datasets, models, transforms
 
 # NOTE - eff to mob || res to eff || mob to res
 

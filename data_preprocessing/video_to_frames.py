@@ -9,7 +9,6 @@ If you want to collect frames from a video for some data, it may be much faster 
 import cv2
 import os
 import numpy as np
-import math
  
  
 video_path = '/Users/brianprzezdziecki/Downloads/Run1.mov'

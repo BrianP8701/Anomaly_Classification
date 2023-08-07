@@ -15,8 +15,6 @@
 '''
 
 import cv2
-import numpy as np
-import os
 
 # Initialize the top right corner of the rectangle to be drawn
 bottom_right_corner = (0, 0)
