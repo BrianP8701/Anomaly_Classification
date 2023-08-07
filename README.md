@@ -29,4 +29,4 @@ conda activate Anomaly_Classification
 ```
 
 
-## Running the Project
+## Usage
