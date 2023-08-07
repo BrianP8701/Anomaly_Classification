@@ -11,7 +11,9 @@ import shutil
 import glob
 import re
 
-"""
+
+def organize_data(folder_list, destination_folder, class_list):
+    """
     This function organizes .jpg files into their respective class folders.
     
     Parameters:
@@ -24,8 +26,7 @@ import re
         
     Usage:
     organize_data(["data/data13", "data/data14", "data/data15"], "maindata", ["normal", "over", "under"])
-"""
-def organize_data(folder_list, destination_folder, class_list):
+    """
     # Initialize a counter for each class
     counters = {class_name: 0 for class_name in class_list}
 
@@ -64,7 +65,9 @@ def organize_data(folder_list, destination_folder, class_list):
 
                     print(f"Moved {source_file_path} to {destination_file_path}")
 
-"""
+
+def split_into_train_val(data_dir, val_size):
+    """
     Splits each class in the given data directory into training and validation subsets.
 
     Args:
@@ -101,8 +104,7 @@ def organize_data(folder_list, destination_folder, class_list):
                 class1/
                 class2/
                 ...
-"""
-def split_into_train_val(data_dir, val_size):
+    """
     # Ensure val_size is a valid proportion
     assert 0 <= val_size <= 1, "val_size should be a decimal between 0 and 1"
 
@@ -151,14 +153,15 @@ def split_into_train_val(data_dir, val_size):
         reorder_images(train_dir)
         reorder_images(val_dir)
         
-'''            
-If you have a folder of images, use this method to order them into:
-    frame0.jpg
-    frame1.jpg
-    frame2.jpg
-    ...
-'''
+
 def reorder_images(folder_path):
+    '''            
+    If you have a folder of images, use this method to order them into:
+        frame0.jpg
+        frame1.jpg
+        frame2.jpg
+        ...
+    '''
     # Get the list of all files
     files = os.listdir(folder_path)
 
@@ -223,7 +226,9 @@ def remove_duplicates(folder_path):
                     # Otherwise, add the hash to the list
                     hashes.append(image_hash)
 
-"""
+
+def combine_train_val_datasets(input_folder, destination_folder):
+    """
     This function combines the 'train' and 'val' datasets from a given input folder into a single 
     dataset in the destination folder. The resulting dataset in the destination folder will not have 
     separate 'train' and 'val' directories, but just the class directories.
@@ -256,7 +261,6 @@ def remove_duplicates(folder_path):
     This function assumes that the images in the source directory follow the naming convention 'frameX.jpg' 
     where X is a number. Images in the source directory are sorted by this number before copying to maintain order.
     """  
-def combine_train_val_datasets(input_folder, destination_folder):
     dataset_types = ['train', 'val']
 
     for dataset_type in dataset_types:
@@ -289,15 +293,16 @@ def combine_train_val_datasets(input_folder, destination_folder):
                 count += 1
 
 
-"""
+     
+def split_dataset_and_copy(source_dir, dest_dir, train_size=0.7, val_size=0.2, test_size=0.1):
+    """
     This function takes a path to a dataset directory and a destination directory, 
     and it copies the dataset into the destination directory, splitting it into 
     training, validation, and test sets.
 
     The dataset directory should be organized into subdirectories, where each
     subdirectory contains the images for a specific class. 
-"""        
-def split_dataset(source_dir, dest_dir, train_size=0.7, val_size=0.2, test_size=0.1):
+    """   
 
     if not os.path.isdir(source_dir):
         raise ValueError(f"Source directory {source_dir} does not exist.")
@@ -328,8 +333,9 @@ def split_dataset(source_dir, dest_dir, train_size=0.7, val_size=0.2, test_size=
                     shutil.copy(os.path.join(class_dir_path, image), os.path.join(dest_set_dir, image))
 
 
-# This is the same as the split_dataset method, expect it modifies the source directory in place instead of copying it.
-def split_dataset_2(source_dir, train_size=0.7, val_size=0.2, test_size=0.1):
+
+# This is the same as the split_dataset_and_copy method, expect it modifies the source directory in place instead of copying it.
+def split_dataset_in_place(source_dir, train_size=0.7, val_size=0.2, test_size=0.1):
 
     if not os.path.isdir(source_dir):
         raise ValueError(f"Source directory {source_dir} does not exist.")
@@ -368,23 +374,23 @@ def split_dataset_2(source_dir, train_size=0.7, val_size=0.2, test_size=0.1):
                 print(dest_set_dir)
                     
                     
-"""
-    This function copies all .jpg images from a list of source folders to a new destination folder.
-    
-    Each source folder is expected to contain subfolders where the name of each subfolder corresponds 
-    to the class name of the images it contains. All images should be .jpg format.
-    
-    The function will create a new destination folder and replicate the class subfolder structure. 
-    It will then copy all images to their corresponding class subfolder in the new destination folder, 
-    and rename the images in the format 'frameX.jpg' where X is an integer to avoid overwriting any images.
-    
-    Parameters:
-    src_folders : list of str
-        List of paths to the source folders.
-    dest_folder : str
-        Path to the destination folder.
-    """
 def copy_images_to_new_folder(src_folders, dest_folder):
+    """
+        This function copies all .jpg images from a list of source folders to a new destination folder.
+        
+        Each source folder is expected to contain subfolders where the name of each subfolder corresponds 
+        to the class name of the images it contains. All images should be .jpg format.
+        
+        The function will create a new destination folder and replicate the class subfolder structure. 
+        It will then copy all images to their corresponding class subfolder in the new destination folder, 
+        and rename the images in the format 'frameX.jpg' where X is an integer to avoid overwriting any images.
+        
+        Parameters:
+        src_folders : list of str
+            List of paths to the source folders.
+        dest_folder : str
+            Path to the destination folder.
+    """
     # Ensure the destination folder exists
     os.makedirs(dest_folder, exist_ok=True)
 

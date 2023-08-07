@@ -1,5 +1,5 @@
 '''
-Are you trying to look through a large video and save some indivdual frames?
+Are you trying to look through a large video frame by frame and save some indivdual frames?
 
 This tool lets you move forwards, and backards through a video at different speeds and save the frames you want.
 
