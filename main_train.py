@@ -18,7 +18,7 @@ Path to folder containing dataset. The dataset should be organized as follows:
 
 # Example input
 dataset_path = 'datasets/active/gmms2'       # Path to dataset as described above
-model_name = 'mobilenet_v3_small'         # Choose which model you want from model_list in model_repository.py
+model_name = 'mobilenet_v3_large'         # Choose which model you want from model_list in model_repository.py
 destination_path = 'models/best.pt'   # Path to save weights of best model
 
 
